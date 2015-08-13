@@ -1,7 +1,7 @@
 package me.minotopia.commandrewriter;
 
-import me.minotopia.commandrewriter.lib.org.mcstats.Metrics;
-import me.minotopia.commandrewriter.lib.org.mcstats.Metrics.Graph;
+import org.mcstats.Metrics;
+import org.mcstats.Metrics.Graph;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
