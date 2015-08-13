@@ -1,4 +1,4 @@
-package de.homerbond005.commandrewriter;
+package me.minotopia.commandrewriter;
 
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;

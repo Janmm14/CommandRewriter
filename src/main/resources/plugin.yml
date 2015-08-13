@@ -1,6 +1,7 @@
 name: CommandRewriter
-main: de.homerbond005.commandrewriter.CRPlugin
+main: me.minotopia.commandrewriter.CRPlugin
 author: HomerBond005
+authors: [MinoTopia, Janmm14]
 version: '${project.version}'
 commands:
     cr:
