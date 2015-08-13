@@ -22,16 +22,12 @@
 	</properties>
 
 	<build>
-		<sourceDirectory>${basedir}/src</sourceDirectory>
-		<resources>
-			<resource>
-				<filtering>true</filtering>
-				<directory>${basedir}</directory>
-				<includes>
-					<include>plugin.yml</include>
-				</includes>
-			</resource>
-		</resources>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
 	</build>
 
 	<dependencies>
