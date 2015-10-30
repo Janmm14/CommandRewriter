@@ -4,5 +4,6 @@ author: HomerBond005
 authors: [MinoTopia, Janmm14]
 version: '${project.version}'
 commands:
-    cr:
-        description: Rewrite commands
+  commandrewrite:
+    description: Rewrite commands
+    aliases: [cr]
