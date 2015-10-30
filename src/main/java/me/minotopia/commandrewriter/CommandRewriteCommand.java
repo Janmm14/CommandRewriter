@@ -17,11 +17,6 @@ public class CommandRewriteCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!command.getName().equalsIgnoreCase("commandrewrite")) {
-            plugin.getLogger().warning("Unknown Command " + command.getName() + " should be handled by me (says bukkit / plugin yml)!");
-            sender.sendMessage("§cWe're sorry but someone played around with the plugin in a wrong way.");
-            return true;
-        }
         if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
             sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "CommandRewriter: Help");
             sender.sendMessage(ChatColor.GOLD + "/cr set <command>" + ChatColor.GRAY + " Start the rewrite assistent to the given command.");
