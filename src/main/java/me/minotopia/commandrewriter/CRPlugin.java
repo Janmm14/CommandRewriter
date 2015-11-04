@@ -11,10 +11,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.mcstats.Metrics;
 import org.mcstats.Metrics.Graph;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,10 +28,13 @@ import static me.minotopia.commandrewriter.Util.not;
 
 public class CRPlugin extends JavaPlugin implements Listener {
 
+    static final String COMMANDS_PATH = "Commands";
+
     @Getter
     private Map<String, String> commands = new HashMap<>();
     @Getter
     private Map<UUID, String> creators = new HashMap<>();
+    private Metrics metrics;
 
     @Override
     public void onEnable() {
@@ -47,7 +52,7 @@ public class CRPlugin extends JavaPlugin implements Listener {
 
     private void startMetrics() {
         try {
-            Metrics metrics = new Metrics(this);
+            metrics = new Metrics(this);
             Graph graphabbr = metrics.createGraph("Defined texts");
             graphabbr.addPlotter(new Metrics.Plotter(Integer.toString(commands.size())) {
                 @Override
@@ -84,7 +89,7 @@ public class CRPlugin extends JavaPlugin implements Listener {
                     player.sendMessage(ChatColor.RED + "The value text will be overwritten with your one.");
                 }
                 commands.put(command, message);
-                getConfig().set("Commands." + command, message);
+                getConfig().set(COMMANDS_PATH + "." + command, message);
                 saveConfig();
                 player.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + command + "'.");
             }
@@ -133,13 +138,32 @@ public class CRPlugin extends JavaPlugin implements Listener {
 
     public void reload() {
         reloadConfig();
-        getConfig().addDefault("Commands", new HashMap<String, String>());
+        getConfig().addDefault(COMMANDS_PATH, new HashMap<String, String>());
         getConfig().options().copyDefaults(true);
         saveConfig();
         commands.clear();
-        ConfigurationSection commandsCfgSection = getConfig().getConfigurationSection("Commands");
+        ConfigurationSection commandsCfgSection = getConfig().getConfigurationSection(COMMANDS_PATH);
         commandsCfgSection.getKeys(false)
             .forEach(command -> commands.put(command.toLowerCase(), commandsCfgSection.getString(command)));
+        updateMetrics();
     }
 
+    private void updateMetrics() {
+        try {
+            Field taskField = Metrics.class.getDeclaredField("task");
+            boolean accessible = taskField.isAccessible();
+            taskField.setAccessible(true);
+            BukkitTask task = (BukkitTask) taskField.get(metrics);
+            taskField.setAccessible(accessible);
+
+            if (task != null) {
+                if (getServer().getScheduler().isCurrentlyRunning(task.getTaskId()) || getServer().getScheduler().isQueued(task.getTaskId())) {
+                    task.cancel();
+                }
+            }
+        } catch (ReflectiveOperationException ex) {
+            ex.printStackTrace();
+        }
+        startMetrics();
+    }
 }

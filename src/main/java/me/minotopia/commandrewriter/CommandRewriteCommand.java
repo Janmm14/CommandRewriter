@@ -67,7 +67,7 @@ public class CommandRewriteCommand implements TabExecutor {
                     com = com.trim();
                     if (plugin.getCommands().containsKey(com.toLowerCase())) {
                         plugin.getCommands().remove(com.toLowerCase());
-                        plugin.getConfig().set("Commands." + com, null);
+                        plugin.getConfig().set(CRPlugin.COMMANDS_PATH + "." + com, null);
                         plugin.saveConfig();
                         sender.sendMessage(ChatColor.GREEN + "Successfully remove the command '" + com + "' from the CommandRewriter list.");
                     } else {
