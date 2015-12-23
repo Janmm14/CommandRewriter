@@ -25,6 +25,7 @@ public class CommandRewriteCommand implements TabExecutor {
             sender.sendMessage(ChatColor.GOLD + "/cr reload" + ChatColor.GRAY + "Reload the config.");
             sender.sendMessage(ChatColor.GRAY + "You can use color codes like " + ChatColor.GOLD + "&6" + ChatColor.GRAY + " in the texts.");
             sender.sendMessage(ChatColor.GRAY + "The symbol " + ChatColor.GOLD + "|" + ChatColor.GRAY + " will be parsed as new line.");
+            sender.sendMessage(ChatColor.GRAY + "Use " + ChatColor.GOLD + "{player}" + ChatColor.GRAY + " to insert the player's name.");
             return true;
         }
         if (args[0].equalsIgnoreCase("set")) {
