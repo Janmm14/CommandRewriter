@@ -119,7 +119,9 @@ public class CRPlugin extends JavaPlugin implements Listener {
             }
         }
         if (matching != null) {
-            List<String> configDefinedMessage = new ArrayList<>(Arrays.asList(commands.get(matching).split("\\|")));
+            String configuredOutput = commands.get(matching);
+            configuredOutput = configuredOutput.replace("{player}", event.getPlayer().getName());
+            List<String> configDefinedMessage = new ArrayList<>(Arrays.asList(configuredOutput.split("\\|")));
             CommandRewriteEvent evt = new CommandRewriteEvent(event, event.getMessage(), matching, configDefinedMessage);
             getServer().getPluginManager().callEvent(evt);
             if (evt.isCancelled()) {
