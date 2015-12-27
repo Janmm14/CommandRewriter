@@ -21,8 +21,8 @@ public class CommandRewriteCommand implements TabExecutor {
             sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "CommandRewriter: Help");
             sender.sendMessage(ChatColor.GOLD + "/cr set <command>" + ChatColor.GRAY + " Start the rewrite assistent to the given command.");
             sender.sendMessage(ChatColor.GOLD + "/cr list" + ChatColor.GRAY + " List all set commands");
-            sender.sendMessage(ChatColor.GOLD + "/cr remove <command>" + ChatColor.GRAY + "Unassign a text from a command.");
-            sender.sendMessage(ChatColor.GOLD + "/cr reload" + ChatColor.GRAY + "Reload the config.");
+            sender.sendMessage(ChatColor.GOLD + "/cr remove <command>" + ChatColor.GRAY + " Unassign a text from a command.");
+            sender.sendMessage(ChatColor.GOLD + "/cr reload" + ChatColor.GRAY + " Reload the config.");
             sender.sendMessage(ChatColor.GRAY + "You can use color codes like " + ChatColor.GOLD + "&6" + ChatColor.GRAY + " in the texts.");
             sender.sendMessage(ChatColor.GRAY + "The symbol " + ChatColor.GOLD + "|" + ChatColor.GRAY + " will be parsed as new line.");
             sender.sendMessage(ChatColor.GRAY + "Use " + ChatColor.GOLD + "{player}" + ChatColor.GRAY + " to insert the player's name.");
