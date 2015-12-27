@@ -155,20 +155,22 @@ public class CRPlugin extends JavaPlugin implements Listener {
     }
 
     private void updateMetrics() {
-        try {
-            Field taskField = Metrics.class.getDeclaredField("task");
-            boolean accessible = taskField.isAccessible();
-            taskField.setAccessible(true);
-            BukkitTask task = (BukkitTask) taskField.get(metrics);
-            taskField.setAccessible(accessible);
+        if (metrics != null) {
+            try {
+                Field taskField = Metrics.class.getDeclaredField("task");
+                boolean accessible = taskField.isAccessible();
+                taskField.setAccessible(true);
+                BukkitTask task = (BukkitTask) taskField.get(metrics);
+                taskField.setAccessible(accessible);
 
-            if (task != null) {
-                if (getServer().getScheduler().isCurrentlyRunning(task.getTaskId()) || getServer().getScheduler().isQueued(task.getTaskId())) {
-                    task.cancel();
+                if (task != null) {
+                    if (getServer().getScheduler().isCurrentlyRunning(task.getTaskId()) || getServer().getScheduler().isQueued(task.getTaskId())) {
+                        task.cancel();
+                    }
                 }
+            } catch (ReflectiveOperationException ex) {
+                ex.printStackTrace();
             }
-        } catch (ReflectiveOperationException ex) {
-            ex.printStackTrace();
         }
         startMetrics();
     }
