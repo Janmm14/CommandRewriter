@@ -102,6 +102,10 @@ public class CRPlugin extends JavaPlugin implements Listener {
         saveConfig();
     }
 
+    public boolean isPluginPrefixUsageRestricted() {
+        return getConfig().getBoolean("permission-required-for-plugin-prefix");
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
         String standardizedMessage = event.getMessage().trim().toLowerCase();
@@ -143,13 +147,28 @@ public class CRPlugin extends JavaPlugin implements Listener {
                     .forEach(event.getPlayer()::sendMessage);
             }
             event.setCancelled(true);
+        } else {
+            if (parts.length != 0 && isPluginPrefixUsageRestricted()) {
+                if (!event.getPlayer().hasPermission("CommandRewriter.pluginprefix")) {
+                    if (parts[0].contains(":")) {
+                        event.setCancelled(true);
+                        event.getPlayer().sendMessage("Dieser Befehl ist uns nicht bekannt. Probiere /" + parts[0].split(":")[1]);
+                        return;
+                    }
+                }
+            }
+
         }
     }
 
     public void reload() {
         reloadConfig();
+        getConfig().addDefault("permission-required-for-plugin-prefix", true);
         getConfig().addDefault(COMMANDS_PATH, new HashMap<String, String>());
-        getConfig().options().copyDefaults(true);
+        getConfig().options()
+            .copyDefaults(true)
+            .copyHeader(true)
+            .header("CommandRewriter configuration. Use \"/cr reload\" to reload.\nThe permission node for the plugin prefix command usage is: CommandRewriter.pluginprefix");
         saveConfig();
         commands.clear();
         reloadConfig();
