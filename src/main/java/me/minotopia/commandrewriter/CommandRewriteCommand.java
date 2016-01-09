@@ -73,15 +73,15 @@ public class CommandRewriteCommand implements TabExecutor {
 				plugin.setRewrite(command, message);
 				if (sender instanceof Player) {
 					if (overridden) {
-						sender.sendMessage(ChatColor.RED + "The command '" + cmd + "' is already rewritten.");
+						sender.sendMessage(ChatColor.RED + "The command '" + command + "' is already rewritten.");
 						sender.sendMessage(ChatColor.RED + "The value text will be overwritten with your one.");
 					}
-					sender.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + cmd + "'.");
+					sender.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + command + "'.");
 				} else {
 					if (overridden) {
-						sender.sendMessage(ChatColor.GREEN + "Successfully re-assigned the text to the command '" + cmd + "'.");
+						sender.sendMessage(ChatColor.GREEN + "Successfully re-assigned the text to the command '" + command + "'.");
 					} else {
-						sender.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + cmd + "'.");
+						sender.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + command + "'.");
 					}
 				}
 			}
