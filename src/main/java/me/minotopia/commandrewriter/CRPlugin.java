@@ -88,14 +88,18 @@ public class CRPlugin extends JavaPlugin implements Listener {
                     player.sendMessage(ChatColor.RED + "The command '" + command + "' is already rewritten.");
                     player.sendMessage(ChatColor.RED + "The value text will be overwritten with your one.");
                 }
-                commands.put(command, message);
-                getConfig().set(COMMANDS_PATH + "." + command, message);
-                saveConfig();
+                setRewrite(command, message);
                 player.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + command + "'.");
             }
             creators.remove(uuid);
             event.setCancelled(true);
         }
+    }
+
+    public void setRewrite(String command, String message) {
+        commands.put(command, message);
+        getConfig().set(COMMANDS_PATH + "." + command, message);
+        saveConfig();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -148,9 +152,10 @@ public class CRPlugin extends JavaPlugin implements Listener {
         getConfig().options().copyDefaults(true);
         saveConfig();
         commands.clear();
+        reloadConfig();
         ConfigurationSection commandsCfgSection = getConfig().getConfigurationSection(COMMANDS_PATH);
         commandsCfgSection.getKeys(false)
-            .forEach(command -> commands.put(command.toLowerCase(), commandsCfgSection.getString(command)));
+            .forEach(command -> commands.put(command.trim().toLowerCase(), commandsCfgSection.getString(command)));
         updateMetrics();
     }
 
