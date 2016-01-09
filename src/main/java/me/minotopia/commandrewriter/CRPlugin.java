@@ -109,7 +109,7 @@ public class CRPlugin extends JavaPlugin implements Listener {
     }
 
     public boolean isPluginPrefixUsageRestricted() {
-        return getConfig().getBoolean("permission-required-for-plugin-prefix");
+        return getConfig().getBoolean(PLUGIN_PREFIX_RESTRICTION_PATH);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -120,8 +120,8 @@ public class CRPlugin extends JavaPlugin implements Listener {
         }
         String[] parts = standardizedMessage.split(" ");
         String matching = null;
-        //remove argument for argument, starting with longest possible
-        if (!Util.isRegex(standardizedMessage)) { //no match would be possible
+        if (!Util.isRegex(standardizedMessage)) { //no "normal" match should be possible with regex pattern
+            //remove argument for argument, starting with longest possible
             for (int i = parts.length; i > 0; i--) {
                 String check = "";
                 for (int w = 0; w < i; w++) {
@@ -155,8 +155,7 @@ public class CRPlugin extends JavaPlugin implements Listener {
                     .forEach(event.getPlayer()::sendMessage);
             }
             event.setCancelled(true);
-        } else {
-            // check regex matching
+        } else { // check regex matching
             for (Map.Entry<String, String> entry : commands.entrySet()) {
                 String configuredCommand = entry.getKey();
                 if (!Util.isRegex(configuredCommand)) {
