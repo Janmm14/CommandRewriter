@@ -7,3 +7,4 @@ commands:
   commandrewrite:
     description: Rewrite commands
     aliases: [cr]
+    permission: CommandRewriter.seecmd
