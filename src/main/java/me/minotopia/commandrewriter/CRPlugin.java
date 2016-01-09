@@ -23,11 +23,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static me.minotopia.commandrewriter.Util.not;
 
 public class CRPlugin extends JavaPlugin implements Listener {
 
+    private static final String PLUGIN_PREFIX_RESTRICTION_PATH = "permission-required-for-plugin-prefix";
     static final String COMMANDS_PATH = "Commands";
 
     @Getter
@@ -82,7 +85,10 @@ public class CRPlugin extends JavaPlugin implements Listener {
             if (event.getMessage().equalsIgnoreCase("!abort")) {
                 player.sendMessage(ChatColor.RED + "You have aborted the CommandRewriter assistent.");
             } else {
-                String command = creators.get(uuid).toLowerCase();
+                String command = creators.get(uuid);
+                if (!Util.isRegex(command)) {
+                    command = command.toLowerCase();
+                }
                 String message = event.getMessage();
                 if (commands.containsKey(command)) {
                     player.sendMessage(ChatColor.RED + "The command '" + command + "' is already rewritten.");
@@ -115,15 +121,17 @@ public class CRPlugin extends JavaPlugin implements Listener {
         String[] parts = standardizedMessage.split(" ");
         String matching = null;
         //remove argument for argument, starting with longest possible
-        for (int i = parts.length; i > 0; i--) {
-            String check = "";
-            for (int w = 0; w < i; w++) {
-                check += parts[w] + " ";
-            }
-            check = check.trim();
-            if (commands.containsKey(check)) {
-                matching = check;
-                break;
+        if (!Util.isRegex(standardizedMessage)) { //no match would be possible
+            for (int i = parts.length; i > 0; i--) {
+                String check = "";
+                for (int w = 0; w < i; w++) {
+                    check += parts[w] + " ";
+                }
+                check = check.trim();
+                if (commands.containsKey(check)) {
+                    matching = check;
+                    break;
+                }
             }
         }
         if (matching != null) {
@@ -148,22 +156,54 @@ public class CRPlugin extends JavaPlugin implements Listener {
             }
             event.setCancelled(true);
         } else {
+            // check regex matching
+            for (Map.Entry<String, String> entry : commands.entrySet()) {
+                String configuredCommand = entry.getKey();
+                if (!Util.isRegex(configuredCommand)) {
+                    continue;
+                }
+                String regex = configuredCommand.substring("!r".length()).trim() + ".*";
+
+                Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+                Matcher matcher = pattern.matcher(standardizedMessage);
+                if (matcher.matches()) {
+                    //replace {player}
+                    String configuredOutput = entry.getValue().replace("{player}", event.getPlayer().getName());
+                    //split into multiple lines at |
+                    List<String> configDefinedMessage = new ArrayList<>(Arrays.asList(configuredOutput.split("\\|")));
+                    //call the event
+                    CommandRewriteEvent evt = new CommandRewriteEvent(event, event.getMessage(), "!r" + regex, configDefinedMessage);
+                    getServer().getPluginManager().callEvent(evt);
+                    //handle and use event output
+                    if (evt.isCancelled()) {
+                        return;
+                    }
+                    configDefinedMessage = evt.getMessageToSend();
+                    if (!configDefinedMessage.isEmpty()) {
+                        configDefinedMessage.stream()
+                            .filter(not(String::isEmpty))
+                            .map(Util::translateColorCodes)
+                            .forEach(event.getPlayer()::sendMessage);
+                    }
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+            //no regex match
             if (parts.length != 0 && isPluginPrefixUsageRestricted()) {
                 if (!event.getPlayer().hasPermission("CommandRewriter.pluginprefix")) {
                     if (parts[0].contains(":")) {
                         event.setCancelled(true);
                         event.getPlayer().sendMessage("Dieser Befehl ist uns nicht bekannt. Probiere /" + parts[0].split(":")[1]);
-                        return;
                     }
                 }
             }
-
         }
     }
 
     public void reload() {
         reloadConfig();
-        getConfig().addDefault("permission-required-for-plugin-prefix", true);
+        getConfig().addDefault(PLUGIN_PREFIX_RESTRICTION_PATH, true);
         getConfig().addDefault(COMMANDS_PATH, new HashMap<String, String>());
         getConfig().options()
             .copyDefaults(true)
@@ -174,7 +214,13 @@ public class CRPlugin extends JavaPlugin implements Listener {
         reloadConfig();
         ConfigurationSection commandsCfgSection = getConfig().getConfigurationSection(COMMANDS_PATH);
         commandsCfgSection.getKeys(false)
-            .forEach(command -> commands.put(command.trim().toLowerCase(), commandsCfgSection.getString(command)));
+            .forEach(command -> {
+                command = command.trim();
+                if (!Util.isRegex(command)) {
+                    command = command.toLowerCase();
+                }
+                commands.put(command, commandsCfgSection.getString(command).trim());
+            });
         updateMetrics();
     }
 

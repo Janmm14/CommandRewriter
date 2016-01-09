@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Predicate;
 
 /**
- * Provides general utilities for the plugin
+ * Provides general utilities for the CommandRewriter plugin.
  */
 public final class Util {
 
@@ -34,5 +34,15 @@ public final class Util {
     @NotNull
     public static <T> Predicate<T> not(@NotNull Predicate<T> toNegate) {
         return toNegate.negate();
+    }
+
+	/**
+     * Checks whether the given command matches the regex marker<br>
+     * The regex marker is !r at the start.
+     * @param command the configured command
+     * @return whether the command should be interpreted as regex
+     */
+    public static boolean isRegex(String command) {
+        return command.startsWith("!r");
     }
 }

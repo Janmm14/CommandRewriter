@@ -29,6 +29,8 @@ public class CommandRewriteCommand implements TabExecutor {
             sender.sendMessage(ChatColor.GRAY + "You can use color codes like " + ChatColor.GOLD + "&6" + ChatColor.GRAY + " in the texts.");
             sender.sendMessage(ChatColor.GRAY + "The symbol " + ChatColor.GOLD + "|" + ChatColor.GRAY + " will be parsed as new line.");
             sender.sendMessage(ChatColor.GRAY + "Use " + ChatColor.GOLD + "{player}" + ChatColor.GRAY + " to insert the player's name.");
+            sender.sendMessage(ChatColor.GRAY + "Use " + ChatColor.GOLD + "!r" + ChatColor.GRAY + " at the start of the command to input regex for matching.");
+            sender.sendMessage(ChatColor.GRAY + "The given regex will be suffixed with " + ChatColor.GOLD + ".*" + ChatColor.GRAY + '.');
             return true;
         }
         if (args[0].equalsIgnoreCase("set")) {
@@ -61,7 +63,10 @@ public class CommandRewriteCommand implements TabExecutor {
 				sender.sendMessage(ChatColor.RED + "Wrong syntax. Usage: /cr set <command> [&*& <message>]");
 				return true;
 			} else {
-				String command = split[0].trim().toLowerCase();
+                String command = split[0].trim();
+                if (!Util.isRegex(command)) {
+                    command = command.toLowerCase();
+                }
 				String message = split[1].trim();
 				boolean overridden = plugin.getCommands().containsKey(command);
 
@@ -97,8 +102,11 @@ public class CommandRewriteCommand implements TabExecutor {
                         com += args[i] + " ";
                     }
                     com = com.trim();
-                    if (plugin.getCommands().containsKey(com.toLowerCase())) {
-                        plugin.getCommands().remove(com.toLowerCase());
+                    if (!Util.isRegex(com)) {
+                        com = com.toLowerCase();
+                    }
+                    if (plugin.getCommands().containsKey(com)) {
+                        plugin.getCommands().remove(com);
                         plugin.getConfig().set(CRPlugin.COMMANDS_PATH + "." + com, null);
                         plugin.saveConfig();
                         sender.sendMessage(ChatColor.GREEN + "Successfully remove the command '" + com + "' from the CommandRewriter list.");
