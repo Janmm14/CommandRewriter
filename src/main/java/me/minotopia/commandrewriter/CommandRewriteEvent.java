@@ -1,5 +1,6 @@
 package me.minotopia.commandrewriter;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -35,6 +36,10 @@ public class CommandRewriteEvent extends Event implements Cancellable {
     @NotNull
     public CommandRewriteEvent.Unsafe unsafe() {
         return unsafe;
+    }
+
+    public Player getPlayer() {
+        return commandPreprocessEvent.getPlayer();
     }
 
     /**
