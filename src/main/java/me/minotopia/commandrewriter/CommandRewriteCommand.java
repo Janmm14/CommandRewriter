@@ -9,17 +9,20 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 public class CommandRewriteCommand implements TabExecutor {
 
     private final CRPlugin plugin;
+    private static final Pattern SPLIT_PATTERN = Pattern.compile("&*&", Pattern.LITERAL);
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
-            sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "CommandRewriter: Help");
+            sender.sendMessage(ChatColor.GOLD + ChatColor.BOLD.toString() + "CommandRewriter: Help");
             sender.sendMessage(ChatColor.GOLD + "/cr set <command>" + ChatColor.GRAY + " Start the rewrite assistent to the given command.");
+            sender.sendMessage(ChatColor.GOLD + "/cr set <command> &*& <message>" + ChatColor.GRAY + " Rewrite the command with the given message.");
             sender.sendMessage(ChatColor.GOLD + "/cr list" + ChatColor.GRAY + " List all set commands");
             sender.sendMessage(ChatColor.GOLD + "/cr remove <command>" + ChatColor.GRAY + " Unassign a text from a command.");
             sender.sendMessage(ChatColor.GOLD + "/cr reload" + ChatColor.GRAY + " Reload the config.");
@@ -29,22 +32,50 @@ public class CommandRewriteCommand implements TabExecutor {
             return true;
         }
         if (args[0].equalsIgnoreCase("set")) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(ChatColor.RED + "Use this command in-game!");
-                return true;
-            }
-            Player plr = (Player) sender;
             if (sender.hasPermission("CommandRewriter.set")) {
                 if (args.length >= 2) {
-                    String com = "";
+                    String combined = "";
                     for (int i = 1; i < args.length; i++) {
-                        com += args[i] + " ";
+                        combined += args[i] + " ";
                     }
-                    plugin.getCreators().put(plr.getUniqueId(), com.trim().toLowerCase());
-                    sender.sendMessage(ChatColor.GREEN + "Now type the message that should be assigned to the command.");
-                    sender.sendMessage(ChatColor.GREEN + "Type !abort to abort");
+
+                    String[] split = SPLIT_PATTERN.split(combined);
+                    if (split.length == 1) {
+                        if ((sender instanceof Player)) {
+                            Player plr = (Player) sender;
+                            plugin.getCreators().put(plr.getUniqueId(), combined.trim().toLowerCase());
+                            sender.sendMessage(ChatColor.GREEN + "Now type the message that should be assigned to the command.");
+                            sender.sendMessage(ChatColor.GREEN + "Type !abort to abort");
+                        } else {
+                            sender.sendMessage(ChatColor.RED + "Wrong syntax for console. Usage: /cr set <command> [&*& <message>]");
+                            return true;
+                        }
+                    } else if (split.length != 2) {
+                        sender.sendMessage(ChatColor.RED + "Wrong syntax. Usage: /cr set <command> [&*& <message>]");
+                        return true;
+                    } else {
+                        String command = split[0].trim().toLowerCase();
+                        String message = split[1].trim();
+                        boolean overridden = plugin.getCommands().containsKey(command);
+
+                        plugin.setRewrite(command, message);
+                        if (sender instanceof Player) {
+                            if (overridden) {
+                                sender.sendMessage(ChatColor.RED + "The command '" + cmd + "' is already rewritten.");
+                                sender.sendMessage(ChatColor.RED + "The value text will be overwritten with your one.");
+                            }
+                            sender.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + cmd + "'.");
+                        } else {
+                            if (overridden) {
+                                sender.sendMessage(ChatColor.GREEN + "Successfully re-assigned the text to the command '" + cmd + "'.");
+                            } else {
+                                sender.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + cmd + "'.");
+                            }
+                        }
+                    }
                 } else {
-                    sender.sendMessage(ChatColor.RED + "Use: /cr set <command>");
+                    sender.sendMessage(ChatColor.RED + "Usage: /cr set <command> [&*& <message>]");
+                    return true;
                 }
             } else {
                 sender.sendMessage(ChatColor.RED + "You do not have the required permission!");
