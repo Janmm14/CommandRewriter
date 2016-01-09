@@ -84,7 +84,7 @@ public class CommandRewriteEvent extends Event implements Cancellable {
      * <li>Not sending any message to the player.</li>
      * </ul>
      *
-     * @param cancelled whehter to cancel command rewriting
+     * @param cancelled whether to cancel command rewriting
      */
     @Override
     public void setCancelled(boolean cancelled) {
