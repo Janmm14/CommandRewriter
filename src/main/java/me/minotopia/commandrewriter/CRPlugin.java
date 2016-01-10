@@ -218,7 +218,10 @@ public class CRPlugin extends JavaPlugin implements Listener {
                 if (!Util.isRegex(command)) {
                     command = command.toLowerCase();
                 }
-                commands.put(command, commandsCfgSection.getString(command).trim());
+                String rmsg = commandsCfgSection.getString(command);
+                if (rmsg != null) {
+                    commands.put(command, rmsg.trim());
+                }
             });
         updateMetrics();
     }
