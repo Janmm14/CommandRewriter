@@ -206,7 +206,8 @@ public class CRPlugin extends JavaPlugin implements Listener {
         getConfig().options()
             .copyDefaults(true)
             .copyHeader(true)
-            .header("CommandRewriter configuration. Use \"/cr reload\" to reload.\nThe permission node for the plugin prefix command usage is: CommandRewriter.pluginprefix");
+            .header("CommandRewriter configuration. Use \"/cr reload\" to reload.\n" +
+                "The permission node for the plugin prefix command usage is: CommandRewriter.pluginprefix");
         saveConfig();
         commands.clear();
         ConfigurationSection commandsCfgSection = getConfig().getConfigurationSection(COMMANDS_PATH);
