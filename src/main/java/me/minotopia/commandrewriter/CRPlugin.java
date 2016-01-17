@@ -72,7 +72,6 @@ public class CRPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        saveConfig();
         commands.clear();
         creators.clear();
     }
@@ -210,7 +209,6 @@ public class CRPlugin extends JavaPlugin implements Listener {
             .header("CommandRewriter configuration. Use \"/cr reload\" to reload.\nThe permission node for the plugin prefix command usage is: CommandRewriter.pluginprefix");
         saveConfig();
         commands.clear();
-        reloadConfig();
         ConfigurationSection commandsCfgSection = getConfig().getConfigurationSection(COMMANDS_PATH);
         commandsCfgSection.getKeys(false)
             .forEach(command -> {
