@@ -95,87 +95,87 @@ public class CommandRewriteCommand implements TabExecutor {
                 }
             }
         } else if (args[0].equalsIgnoreCase("list")) {
-            if (sender.hasPermission("CommandRewriter.list")) {
-                ArrayList<Map.Entry<String, String>> entries = new ArrayList<>(plugin.getCommands().entrySet());
-                int start = 0;
-                int pageNumber = 1;
-
-                int lower = entries.size() / 6;
-                double exact = ((double) entries.size()) / ((double) LIST_PAGE_SIZE);
-                int pageCount = lower;
-                if (lower < exact) { //last page partly filled
-                    pageCount++;
-                }
-                if (args.length > 1) {
-                    if (!StringUtils.isNumeric(args[1])) { // args[1] can't be empty, no extra check needed
-                        sender.sendMessage(ChatColor.RED + "This is no valid number: §6" + args[1]);
-                        return true;
-                    }
-                    try {
-                        pageNumber = Integer.parseInt(args[1]);
-                    } catch (NumberFormatException ex) { //occurres at very high numbers
-                        sender.sendMessage(ChatColor.RED + "This is no valid number: §6" + args[1]);
-                        return true;
-                    }
-                    if (pageNumber == 0) { // no need of negative check as we already check for numeric literals only
-                        sender.sendMessage(ChatColor.RED + "This is no valid number: §6" + args[1]);
-                        return true;
-                    }
-                    start = LIST_PAGE_SIZE * (pageNumber - 1);
-
-
-                    if (start > entries.size()) {
-                        sender.sendMessage(ChatColor.RED + "The page number is too high. Currently " + pageCount + " pages exist.");
-                        return true;
-                    }
-                }
-                sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "CommandRewriter: list " + pageNumber + '/' + pageCount);
-                int end = Math.min(start + LIST_PAGE_SIZE, entries.size());
-                for (int i = start; i < end; i++) {
-                    Map.Entry<String, String> entry = entries.get(i);
-                    sender.sendMessage(ChatColor.GOLD + entry.getKey() + ChatColor.GRAY + ": " + ChatColor.RESET + Util.translateColorCodes(entry.getValue()));
-                }
-            } else {
+            if (!sender.hasPermission("CommandRewriter.list")) {
                 sender.sendMessage(ChatColor.RED + "You do not have the required permission!");
+                return true;
+            }
+            ArrayList<Map.Entry<String, String>> entries = new ArrayList<>(plugin.getCommands().entrySet());
+            int start = 0;
+            int pageNumber = 1;
+
+            int lower = entries.size() / 6;
+            double exact = ((double) entries.size()) / ((double) LIST_PAGE_SIZE);
+            int pageCount = lower;
+            if (lower < exact) { //last page partly filled
+                pageCount++;
+            }
+            if (args.length > 1) {
+                if (!StringUtils.isNumeric(args[1])) { // args[1] can't be empty, no extra check needed
+                    sender.sendMessage(ChatColor.RED + "This is no valid number: §6" + args[1]);
+                    return true;
+                }
+                try {
+                    pageNumber = Integer.parseInt(args[1]);
+                } catch (NumberFormatException ex) { //occurres at very high numbers
+                    sender.sendMessage(ChatColor.RED + "This is no valid number: §6" + args[1]);
+                    return true;
+                }
+                if (pageNumber == 0) { // no need of negative check as we already check for numeric literals only
+                    sender.sendMessage(ChatColor.RED + "This is no valid number: §6" + args[1]);
+                    return true;
+                }
+                start = LIST_PAGE_SIZE * (pageNumber - 1);
+
+                if (start > entries.size()) {
+                    sender.sendMessage(ChatColor.RED + "The page number is too high. Currently " + pageCount + " pages exist.");
+                    return true;
+                }
+            }
+            sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "CommandRewriter: list " + pageNumber + '/' + pageCount);
+            int end = Math.min(start + LIST_PAGE_SIZE, entries.size());
+            for (int i = start; i < end; i++) {
+                Map.Entry<String, String> entry = entries.get(i);
+                sender.sendMessage(ChatColor.GOLD + entry.getKey() + ChatColor.GRAY + ": " + ChatColor.RESET + Util.translateColorCodes(entry.getValue()));
             }
         } else if (args[0].equalsIgnoreCase("remove")) {
-            if (sender.hasPermission("CommandRewriter.remove")) {
-                if (args.length >= 2) {
-                    String com = "";
-                    for (int i = 1; i < args.length; i++) {
-                        com += args[i] + " ";
-                    }
-                    com = com.trim();
-                    if (!Util.isRegex(com)) {
-                        com = com.toLowerCase();
-                    }
-                    if (plugin.getCommands().containsKey(com)) {
-                        removeCommand(com);
-                        if (plugin.isInvalidConfig()) {
-                            sender.sendMessage(ChatColor.RED + "The current loaded commandrewriter configuration is invalid and therefore the change is only done in memory!");
-                        } else {
-                            plugin.saveConfig();
-                        }
-                        sender.sendMessage(ChatColor.GREEN + "Successfully remove the command '" + com + "' from the CommandRewriter list.");
-                    } else {
-                        sender.sendMessage(ChatColor.RED + "The command '" + args[1] + "' is not used in CommandRewriter!");
-                    }
-                } else {
-                    sender.sendMessage(ChatColor.RED + "Use: /cr remove <command>");
-                }
-            } else {
+            if (!sender.hasPermission("CommandRewriter.remove")) {
                 sender.sendMessage(ChatColor.RED + "You do not have the required permission!");
+                return true;
             }
+            if (args.length < 2) {
+				sender.sendMessage(ChatColor.RED + "Use: /cr remove <command>");
+                return true;
+			}
+            String com = "";
+            for (int i = 1; i < args.length; i++) {
+				com += args[i] + " ";
+			}
+            com = com.trim();
+            if (!Util.isRegex(com)) {
+				com = com.toLowerCase();
+			}
+            if (!plugin.getCommands().containsKey(com)) {
+				sender.sendMessage(ChatColor.RED + "The command '" + args[1] + "' is not used in CommandRewriter!");
+                return true;
+			}
+            removeCommand(com);
+            if (plugin.isInvalidConfig()) {
+				sender.sendMessage(ChatColor.RED + "The current loaded commandrewriter configuration is invalid and therefore the change is only done in memory!");
+			} else {
+				plugin.saveConfig();
+			}
+            sender.sendMessage(ChatColor.GREEN + "Successfully remove the command '" + com + "' from the CommandRewriter list.");
         } else if (args[0].equalsIgnoreCase("reload")) {
-            if (sender.hasPermission("CommandRewriter.reload")) {
-                plugin.reload(sender);
-                plugin.getLogger().info("has been reloaded.");
-                sender.sendMessage(ChatColor.GREEN + "CommandRewriter has been successfully reloaded.");
-            } else {
+            if (!sender.hasPermission("CommandRewriter.reload")) {
                 sender.sendMessage(ChatColor.RED + "You do not have the required permission!");
+                return true;
             }
+            plugin.reload(sender);
+            plugin.getLogger().info("has been reloaded.");
+            sender.sendMessage(ChatColor.GREEN + "CommandRewriter has been successfully reloaded.");
         } else {
             sender.sendMessage(ChatColor.RED + "See /cr help for help.");
+            return true;
         }
         return true;
     }
