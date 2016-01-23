@@ -1,12 +1,14 @@
 package me.minotopia.commandrewriter;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -16,6 +18,7 @@ public class CommandRewriteCommand implements TabExecutor {
 
     private final CRPlugin plugin;
     private static final Pattern SPLIT_PATTERN = Pattern.compile("&*&", Pattern.LITERAL);
+    private static final int LIST_PAGE_SIZE = 6;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -23,7 +26,7 @@ public class CommandRewriteCommand implements TabExecutor {
             sender.sendMessage(ChatColor.GOLD + ChatColor.BOLD.toString() + "CommandRewriter: Help");
             sender.sendMessage(ChatColor.GOLD + "/cr set <command>" + ChatColor.GRAY + " Start the rewrite assistent to the given command.");
             sender.sendMessage(ChatColor.GOLD + "/cr set <command> &*& <message>" + ChatColor.GRAY + " Rewrite the command with the given message.");
-            sender.sendMessage(ChatColor.GOLD + "/cr list" + ChatColor.GRAY + " List all set commands");
+            sender.sendMessage(ChatColor.GOLD + "/cr list [pagenumber]" + ChatColor.GRAY + " List all set commands");
             sender.sendMessage(ChatColor.GOLD + "/cr remove <command>" + ChatColor.GRAY + " Unassign a text from a command.");
             sender.sendMessage(ChatColor.GOLD + "/cr reload" + ChatColor.GRAY + " Reload the config.");
             sender.sendMessage(ChatColor.GRAY + "You can use color codes like " + ChatColor.GOLD + "&6" + ChatColor.GRAY + " in the texts.");
@@ -93,8 +96,43 @@ public class CommandRewriteCommand implements TabExecutor {
             }
         } else if (args[0].equalsIgnoreCase("list")) {
             if (sender.hasPermission("CommandRewriter.list")) {
-                sender.sendMessage(ChatColor.GRAY + "The following messages are assigned:");
-                for (Map.Entry<String, String> entry : plugin.getCommands().entrySet()) {
+                ArrayList<Map.Entry<String, String>> entries = new ArrayList<>(plugin.getCommands().entrySet());
+                int start = 0;
+                int pageNumber = 1;
+
+                int lower = entries.size() / 6;
+                double exact = ((double) entries.size()) / ((double) LIST_PAGE_SIZE);
+                int pageCount = lower;
+                if (lower < exact) { //last page partly filled
+                    pageCount++;
+                }
+                if (args.length > 1) {
+                    if (!StringUtils.isNumeric(args[1])) { // args[1] can't be empty, no extra check needed
+                        sender.sendMessage(ChatColor.RED + "This is no valid number: §6" + args[1]);
+                        return true;
+                    }
+                    try {
+                        pageNumber = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException ex) { //occurres at very high numbers
+                        sender.sendMessage(ChatColor.RED + "This is no valid number: §6" + args[1]);
+                        return true;
+                    }
+                    if (pageNumber == 0) { // no need of negative check as we already check for numeric literals only
+                        sender.sendMessage(ChatColor.RED + "This is no valid number: §6" + args[1]);
+                        return true;
+                    }
+                    start = LIST_PAGE_SIZE * (pageNumber - 1);
+
+
+                    if (start > entries.size()) {
+                        sender.sendMessage(ChatColor.RED + "The page number is too high. Currently " + pageCount + " pages exist.");
+                        return true;
+                    }
+                }
+                sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "CommandRewriter: list " + pageNumber + '/' + pageCount);
+                int end = Math.min(start + LIST_PAGE_SIZE, entries.size());
+                for (int i = start; i < end; i++) {
+                    Map.Entry<String, String> entry = entries.get(i);
                     sender.sendMessage(ChatColor.GOLD + entry.getKey() + ChatColor.GRAY + ": " + ChatColor.RESET + Util.translateColorCodes(entry.getValue()));
                 }
             } else {
