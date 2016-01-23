@@ -15,6 +15,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.mcstats.Metrics;
 import org.mcstats.Metrics.Graph;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -208,7 +209,9 @@ public class CRPlugin extends JavaPlugin implements Listener {
             .copyHeader(true)
             .header("CommandRewriter configuration. Use \"/cr reload\" to reload.\n" +
                 "The permission node for the plugin prefix command usage is: CommandRewriter.pluginprefix");
-        saveConfig();
+        if (!new File(getDataFolder(), "config.yml").exists()) {
+            saveConfig();
+        }
         commands.clear();
         ConfigurationSection commandsCfgSection = getConfig().getConfigurationSection(COMMANDS_PATH);
         commandsCfgSection.getKeys(false)
