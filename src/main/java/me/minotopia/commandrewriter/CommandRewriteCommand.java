@@ -39,52 +39,58 @@ public class CommandRewriteCommand implements TabExecutor {
                 return true;
             }
             if (args.length < 2) {
-				sender.sendMessage(ChatColor.RED + "Usage: /cr set <command> [&*& <message>]");
-				return true;
-			}
+                sender.sendMessage(ChatColor.RED + "Usage: /cr set <command> [&*& <message>]");
+                return true;
+            }
             String combined = "";
             for (int i = 1; i < args.length; i++) {
-				combined += args[i] + " ";
-			}
+                combined += args[i] + " ";
+            }
 
             String combinedTrim = combined.trim();
             String[] split = SPLIT_PATTERN.split(combinedTrim);
             if (split.length == 1) {
-				if ((sender instanceof Player)) {
-					Player plr = (Player) sender;
-					plugin.getCreators().put(plr.getUniqueId(), combinedTrim.toLowerCase());
-					sender.sendMessage(ChatColor.GREEN + "Now type the message that should be assigned to the command.");
-					sender.sendMessage(ChatColor.GREEN + "Type !abort to abort");
-				} else {
-					sender.sendMessage(ChatColor.RED + "Wrong syntax for console. Usage: /cr set <command> [&*& <message>]");
-					return true;
-				}
-			} else if (split.length != 2) {
-				sender.sendMessage(ChatColor.RED + "Wrong syntax. Usage: /cr set <command> [&*& <message>]");
-				return true;
-			} else {
+                if ((sender instanceof Player)) {
+                    Player plr = (Player) sender;
+                    plugin.getCreators().put(plr.getUniqueId(), combinedTrim.toLowerCase());
+                    sender.sendMessage(ChatColor.GREEN + "Now type the message that should be assigned to the command.");
+                    sender.sendMessage(ChatColor.GREEN + "Type !abort to abort");
+                } else {
+                    sender.sendMessage(ChatColor.RED + "Wrong syntax for console. Usage: /cr set <command> [&*& <message>]");
+                    return true;
+                }
+            } else if (split.length != 2) {
+                sender.sendMessage(ChatColor.RED + "Wrong syntax. Usage: /cr set <command> [&*& <message>]");
+                return true;
+            } else {
                 String command = split[0].trim();
                 if (!Util.isRegex(command)) {
                     command = command.toLowerCase();
                 }
-				String message = split[1].trim();
-				boolean overridden = plugin.getCommands().containsKey(command);
+                String message = split[1].trim();
+                boolean overridden = plugin.getCommands().containsKey(command);
 
-				plugin.setRewrite(command, message);
-				if (sender instanceof Player) {
-					if (overridden) {
-						sender.sendMessage(ChatColor.RED + "The command '" + command + "' is already rewritten.");
-						sender.sendMessage(ChatColor.RED + "The value text will be overwritten with your one.");
-					}
-					sender.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + command + "'.");
-				} else {
-					if (overridden) {
-						sender.sendMessage(ChatColor.GREEN + "Successfully re-assigned the text to the command '" + command + "'.");
-					} else {
-						sender.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + command + "'.");
-					}
-				}
-			}
+                plugin.setRewrite(command, message);
+                if (plugin.isInvalidConfig()) {
+                    sender.sendMessage(ChatColor.RED + "The current loaded commandrewriter configuration is invalid and therefore the change is only done in memory!");
+                } else {
+                    plugin.saveConfig();
+                }
+
+                if (sender instanceof Player) {
+                    if (overridden) {
+                        sender.sendMessage(ChatColor.RED + "The command '" + command + "' is already rewritten.");
+                        sender.sendMessage(ChatColor.RED + "The value text will be overwritten with your one.");
+                    }
+                    sender.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + command + "'.");
+                } else {
+                    if (overridden) {
+                        sender.sendMessage(ChatColor.GREEN + "Successfully re-assigned the text to the command '" + command + "'.");
+                    } else {
+                        sender.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + command + "'.");
+                    }
+                }
+            }
         } else if (args[0].equalsIgnoreCase("list")) {
             if (sender.hasPermission("CommandRewriter.list")) {
                 sender.sendMessage(ChatColor.GRAY + "The following messages are assigned:");
@@ -106,9 +112,12 @@ public class CommandRewriteCommand implements TabExecutor {
                         com = com.toLowerCase();
                     }
                     if (plugin.getCommands().containsKey(com)) {
-                        plugin.getCommands().remove(com);
-                        plugin.getConfig().set(CRPlugin.COMMANDS_PATH + "." + com, null);
-                        plugin.saveConfig();
+                        removeCommand(com);
+                        if (plugin.isInvalidConfig()) {
+                            sender.sendMessage(ChatColor.RED + "The current loaded commandrewriter configuration is invalid and therefore the change is only done in memory!");
+                        } else {
+                            plugin.saveConfig();
+                        }
                         sender.sendMessage(ChatColor.GREEN + "Successfully remove the command '" + com + "' from the CommandRewriter list.");
                     } else {
                         sender.sendMessage(ChatColor.RED + "The command '" + args[1] + "' is not used in CommandRewriter!");
@@ -121,7 +130,7 @@ public class CommandRewriteCommand implements TabExecutor {
             }
         } else if (args[0].equalsIgnoreCase("reload")) {
             if (sender.hasPermission("CommandRewriter.reload")) {
-                plugin.reload();
+                plugin.reload(sender);
                 plugin.getLogger().info("has been reloaded.");
                 sender.sendMessage(ChatColor.GREEN + "CommandRewriter has been successfully reloaded.");
             } else {
@@ -131,6 +140,11 @@ public class CommandRewriteCommand implements TabExecutor {
             sender.sendMessage(ChatColor.RED + "See /cr help for help.");
         }
         return true;
+    }
+
+    private void removeCommand(String com) {
+        plugin.getCommands().remove(com);
+        plugin.getConfig().set(CRPlugin.COMMANDS_PATH + "." + com, null);
     }
 
     @Override

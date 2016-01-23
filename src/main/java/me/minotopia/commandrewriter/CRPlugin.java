@@ -2,8 +2,11 @@ package me.minotopia.commandrewriter;
 
 import lombok.Getter;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -12,6 +15,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.Nullable;
 import org.mcstats.Metrics;
 import org.mcstats.Metrics.Graph;
 
@@ -33,7 +37,10 @@ public class CRPlugin extends JavaPlugin implements Listener {
 
     private static final String PLUGIN_PREFIX_RESTRICTION_PATH = "permission-required-for-plugin-prefix";
     static final String COMMANDS_PATH = "Commands";
+    private final File cfgFile = new File(getDataFolder(), "config.yml");
 
+    @Getter
+    private boolean invalidConfig = false;
     @Getter
     private Map<String, String> commands = new HashMap<>();
     @Getter
@@ -42,7 +49,7 @@ public class CRPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        reload();
+        reload(null);
 
         PluginCommand cmd = getCommand("commandrewrite");
         CommandRewriteCommand crCmd = new CommandRewriteCommand(this);
@@ -95,6 +102,12 @@ public class CRPlugin extends JavaPlugin implements Listener {
                     player.sendMessage(ChatColor.RED + "The value text will be overwritten with your one.");
                 }
                 setRewrite(command, message);
+                if (invalidConfig) {
+                    player.sendMessage(ChatColor.RED + "The current loaded commandrewriter configuration is invalid and therefore the change is only done in memory!");
+                } else {
+                    saveConfig();
+                }
+
                 player.sendMessage(ChatColor.GREEN + "Successfully assigned the text to the command '" + command + "'.");
             }
             creators.remove(uuid);
@@ -105,7 +118,6 @@ public class CRPlugin extends JavaPlugin implements Listener {
     public void setRewrite(String command, String message) {
         commands.put(command, message);
         getConfig().set(COMMANDS_PATH + "." + command, message);
-        saveConfig();
     }
 
     public boolean isPluginPrefixUsageRestricted() {
@@ -200,7 +212,29 @@ public class CRPlugin extends JavaPlugin implements Listener {
         }
     }
 
-    public void reload() {
+    public void reload(@Nullable CommandSender reloader) {
+        try {
+            new YamlConfiguration().load(cfgFile); //loading config for testing
+        } catch (IOException e) {
+            invalidConfig = true;
+            if (reloader != null) {
+                reloader.sendMessage("§cAn i/o error occurred while reloading the config. Fix the issue(s) and then try to reload again.");
+                reloader.sendMessage("§cError: " + e.getMessage());
+            }
+            getLogger().severe("An i/o error occurred while reloading the config. Fix the issue(s) and then try to reload again.");
+            e.printStackTrace();
+            return;
+        } catch (InvalidConfigurationException e) {
+            invalidConfig = true;
+            if (reloader != null) {
+                reloader.sendMessage("§cThe configuration is invalid! Fix the issue(s) and then try to reload (again).");
+                reloader.sendMessage("§cError: " + e.getMessage());
+            }
+            getLogger().severe("The configuration is invalid! Fix the issue(s) and then try to reload (again).");
+            e.printStackTrace();
+            return;
+        }
+        invalidConfig = false;
         reloadConfig();
         getConfig().addDefault(PLUGIN_PREFIX_RESTRICTION_PATH, true);
         getConfig().addDefault(COMMANDS_PATH, new HashMap<String, String>());
@@ -209,7 +243,7 @@ public class CRPlugin extends JavaPlugin implements Listener {
             .copyHeader(true)
             .header("CommandRewriter configuration. Use \"/cr reload\" to reload.\n" +
                 "The permission node for the plugin prefix command usage is: CommandRewriter.pluginprefix");
-        if (!new File(getDataFolder(), "config.yml").exists()) {
+        if (!cfgFile.exists()) {
             saveConfig();
         }
         commands.clear();

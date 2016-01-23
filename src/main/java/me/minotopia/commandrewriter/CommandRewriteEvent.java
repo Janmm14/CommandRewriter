@@ -52,6 +52,7 @@ public class CommandRewriteEvent extends Event implements Cancellable {
 
     /**
      * If this starts with {@code !r}, the rest of the trigger is suffixed with {@code .*} and parsed as regex, then it checks for match
+     *
      * @return The part of the issued command which is defined in the command rewriter config and lead to rewrite the command
      * @see Util#isRegex(String)
      */

@@ -16,6 +16,7 @@ public final class Util {
 
     /**
      * Translates the color code {@code &} to the minecraft color code {@code §}
+     *
      * @param inputMsg the message to convert
      * @return the converted message
      * @see ChatColor#translateAlternateColorCodes(char, String)
@@ -26,6 +27,7 @@ public final class Util {
 
     /**
      * Negates a predicate
+     *
      * @param toNegate the predicate to negate
      * @param <T> the argument of the {@link Predicate#test(Object)} method
      * @return the negated predicate
@@ -36,9 +38,10 @@ public final class Util {
         return toNegate.negate();
     }
 
-	/**
+    /**
      * Checks whether the given command matches the regex marker<br>
      * The regex marker is !r at the start.
+     *
      * @param command the configured command
      * @return whether the command should be interpreted as regex
      */
