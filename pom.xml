@@ -5,7 +5,7 @@
 
     <groupId>me.minotopia</groupId>
     <artifactId>commandrewriter</artifactId>
-    <version>1.7.2-SNAPSHOT</version>
+    <version>1.7.2</version>
     <name>CommandRewriter</name>
 
     <repositories>
