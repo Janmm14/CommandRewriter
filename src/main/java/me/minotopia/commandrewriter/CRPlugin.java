@@ -218,10 +218,10 @@ public class CRPlugin extends JavaPlugin implements Listener {
         } catch (IOException e) {
             invalidConfig = true;
             if (reloader != null) {
-                reloader.sendMessage("§cAn i/o error occurred while reloading the config. Fix the issue(s) and then try to reload again.");
+                reloader.sendMessage("§cAn i/o error occurred while reloading the config. Fix the issue(s) and then try to reload (again).");
                 reloader.sendMessage("§cError: " + e.getMessage());
             }
-            getLogger().severe("An i/o error occurred while reloading the config. Fix the issue(s) and then try to reload again.");
+            getLogger().severe("An i/o error occurred while reloading the config. Fix the issue(s) and then try to reload (again).");
             e.printStackTrace();
             return;
         } catch (InvalidConfigurationException e) {
