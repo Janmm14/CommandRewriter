@@ -103,10 +103,10 @@ public class CommandRewriteCommand implements TabExecutor {
             int start = 0;
             int pageNumber = 1;
 
-            int lower = entries.size() / 6;
-            double exact = ((double) entries.size()) / ((double) LIST_PAGE_SIZE);
-            int pageCount = lower;
-            if (lower < exact) { //last page partly filled
+            int lowerPageCount = entries.size() / LIST_PAGE_SIZE;
+            double exactDivision = ((double) entries.size()) / ((double) LIST_PAGE_SIZE);
+            int pageCount = lowerPageCount;
+            if (lowerPageCount < exactDivision) { //last page partly filled
                 pageCount++;
             }
             if (args.length > 1) {
@@ -124,9 +124,8 @@ public class CommandRewriteCommand implements TabExecutor {
                     sender.sendMessage(ChatColor.RED + "This is no valid number: §6" + args[1]);
                     return true;
                 }
-                start = LIST_PAGE_SIZE * (pageNumber - 1);
 
-                if (start > entries.size()) {
+                if (pageNumber > pageCount) {
                     sender.sendMessage(ChatColor.RED + "The page number is too high. Currently " + pageCount + " pages exist.");
                     return true;
                 }
