@@ -1,5 +1,6 @@
 package me.minotopia.commandrewriter;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -65,8 +66,9 @@ public class CommandRewriteEvent extends Event implements Cancellable {
      * <ul>
      *     <li>Will not be sent if the list is empty</li>
      *     <li>A line will not be sent if its empty</li>
-     *     <li>{@link org.bukkit.ChatColor#translateAlternateColorCodes(char, String)} will be called for each line with the char '&'</li>
+     *     <li>{@linkplain ChatColor#translateAlternateColorCodes(char, String)} will be called for each line with the char '&'</li>
      * </ul>
+     *
      * @return The message which will be sent (mutable, no copy)
      */
     @NotNull
