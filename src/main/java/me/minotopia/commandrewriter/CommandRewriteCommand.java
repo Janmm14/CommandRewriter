@@ -143,27 +143,27 @@ public class CommandRewriteCommand implements TabExecutor {
                 return true;
             }
             if (args.length < 2) {
-				sender.sendMessage(ChatColor.RED + "Use: /cr remove <command>");
+                sender.sendMessage(ChatColor.RED + "Use: /cr remove <command>");
                 return true;
-			}
+            }
             String com = "";
             for (int i = 1; i < args.length; i++) {
-				com += args[i] + " ";
-			}
+                com += args[i] + " ";
+            }
             com = com.trim();
             if (!Util.isRegex(com)) {
-				com = com.toLowerCase();
-			}
+                com = com.toLowerCase();
+            }
             if (!plugin.getCommands().containsKey(com)) {
-				sender.sendMessage(ChatColor.RED + "The command '" + args[1] + "' is not used in CommandRewriter!");
+                sender.sendMessage(ChatColor.RED + "The command '" + args[1] + "' is not used in CommandRewriter!");
                 return true;
-			}
+            }
             removeCommand(com);
             if (plugin.isInvalidConfig()) {
-				sender.sendMessage(ChatColor.RED + "The current loaded commandrewriter configuration is invalid and therefore the change is only done in memory!");
-			} else {
-				plugin.saveConfig();
-			}
+                sender.sendMessage(ChatColor.RED + "The current loaded commandrewriter configuration is invalid and therefore the change is only done in memory!");
+            } else {
+                plugin.saveConfig();
+            }
             sender.sendMessage(ChatColor.GREEN + "Successfully remove the command '" + com + "' from the CommandRewriter list.");
         } else if (args[0].equalsIgnoreCase("reload")) {
             if (!sender.hasPermission("CommandRewriter.reload")) {
