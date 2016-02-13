@@ -51,7 +51,7 @@ public class CommandRewriteEvent extends Event implements Cancellable {
     }
 
     /**
-     * If this starts with {@code !r}, the rest of the trigger is suffixed with {@code .*} and parsed as regex, then it checks for match
+     * If this starts with {@code !r}, the trigger is parsed as regex, then it checks for match
      *
      * @return The part of the issued command which is defined in the command rewriter config and lead to rewrite the command
      * @see Util#isRegex(String)
@@ -62,6 +62,11 @@ public class CommandRewriteEvent extends Event implements Cancellable {
     }
 
     /**
+     * <ul>
+     *     <li>Will not be sent if the list is empty</li>
+     *     <li>A line will not be sent if its empty</li>
+     *     <li>{@link org.bukkit.ChatColor#translateAlternateColorCodes(char, String)} will be called for each line with the char '&'</li>
+     * </ul>
      * @return The message which will be sent (mutable, no copy)
      */
     @NotNull
