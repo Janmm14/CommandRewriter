@@ -80,30 +80,7 @@ public class CRPlugin extends JavaPlugin {
         return getConfig().getBoolean(PLUGIN_PREFIX_RESTRICTION_PATH);
     }
 
-    public void reload(@Nullable CommandSender reloader) {
-        try {
-            new YamlConfiguration().load(cfgFile); //loading config for testing
-        } catch (IOException e) {
-            invalidConfig = true;
-            if (reloader != null) {
-                reloader.sendMessage("§cAn i/o error occurred while reloading the config. Fix the issue(s) and then try to reload (again).");
-                reloader.sendMessage("§cError: " + e.getMessage());
-            }
-            getLogger().severe("An i/o error occurred while reloading the config. Fix the issue(s) and then try to reload (again).");
-            e.printStackTrace();
-            return;
-        } catch (InvalidConfigurationException e) {
-            invalidConfig = true;
-            if (reloader != null) {
-                reloader.sendMessage("§cThe configuration is invalid! Fix the issue(s) and then try to reload (again).");
-                reloader.sendMessage("§cError: " + e.getMessage());
-            }
-            getLogger().severe("The configuration is invalid! Fix the issue(s) and then try to reload (again).");
-            e.printStackTrace();
-            return;
-        }
-        invalidConfig = false;
-        reloadConfig();
+    private boolean initConfig() {
         getConfig().addDefault(PLUGIN_PREFIX_RESTRICTION_PATH, true);
         getConfig().addDefault(COMMANDS_PATH, new HashMap<String, String>());
         getConfig().options()
@@ -113,7 +90,38 @@ public class CRPlugin extends JavaPlugin {
                 "The permission node for the plugin prefix command usage is: CommandRewriter.pluginprefix");
         if (!cfgFile.exists()) {
             saveConfig();
+            return true;
         }
+        return false;
+    }
+
+    public void reload(@Nullable CommandSender reloader) {
+        if (!initConfig()) {
+            try {
+                new YamlConfiguration().load(cfgFile); //loading config for testing
+            } catch (IOException e) {
+                invalidConfig = true;
+                if (reloader != null) {
+                    reloader.sendMessage("§cAn i/o error occurred while reloading the config. Fix the issue(s) and then try to reload (again).");
+                    reloader.sendMessage("§cError: " + e.getMessage());
+                }
+                getLogger().severe("An i/o error occurred while reloading the config. Fix the issue(s) and then try to reload (again).");
+                e.printStackTrace();
+                return;
+            } catch (InvalidConfigurationException e) {
+                invalidConfig = true;
+                if (reloader != null) {
+                    reloader.sendMessage("§cThe configuration is invalid! Fix the issue(s) and then try to reload (again).");
+                    reloader.sendMessage("§cError: " + e.getMessage());
+                }
+                getLogger().severe("The configuration is invalid! Fix the issue(s) and then try to reload (again).");
+                e.printStackTrace();
+                return;
+            }
+        }
+        invalidConfig = false;
+        reloadConfig();
+        initConfig();
         commands.clear();
         ConfigurationSection commandsCfgSection = getConfig().getConfigurationSection(COMMANDS_PATH);
         commandsCfgSection.getKeys(false)
