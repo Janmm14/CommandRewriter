@@ -19,10 +19,10 @@ public class CommandRewriteEvent extends Event implements Cancellable {
     @NotNull
     private final String rewriteTrigger;
     @NotNull
-    private List<String> messageToSend;
+    private final List<String> messageToSend;
     private boolean cancelled;
     @NotNull
-    private CommandRewriteEvent.Unsafe unsafe = new CommandRewriteEvent.Unsafe();
+    private final CommandRewriteEvent.Unsafe unsafe = new CommandRewriteEvent.Unsafe();
 
     public CommandRewriteEvent(@NotNull PlayerCommandPreprocessEvent commandPreprocessEvent, @NotNull String fullIssuedCommand, @NotNull String rewriteTrigger, @NotNull List<String> messageToSend) {
         this.commandPreprocessEvent = commandPreprocessEvent;
@@ -39,6 +39,7 @@ public class CommandRewriteEvent extends Event implements Cancellable {
         return unsafe;
     }
 
+    @NotNull
     public Player getPlayer() {
         return commandPreprocessEvent.getPlayer();
     }
@@ -115,7 +116,7 @@ public class CommandRewriteEvent extends Event implements Cancellable {
 
     //////////////////////// Needed for custom events ////////////////////////
 
-    private static HandlerList handlerList = new HandlerList();
+    private static final HandlerList handlerList = new HandlerList();
 
     @Override
     public HandlerList getHandlers() {

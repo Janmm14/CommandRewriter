@@ -5,7 +5,7 @@
 
     <groupId>me.minotopia</groupId>
     <artifactId>commandrewriter</artifactId>
-    <version>1.9.0</version>
+    <version>1.9.1</version>
     <name>CommandRewriter</name>
 
     <repositories>
@@ -14,8 +14,8 @@
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
         <repository>
-            <id>mcstats-repo</id>
-            <url>https://repo.mcstats.org/content/groups/public/</url>
+            <id>sonatype-oss-repo</id>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
     </repositories>
 
@@ -23,11 +23,37 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <jarsigner.skip>true</jarsigner.skip>
     </properties>
 
-    <build>
-        <defaultGoal>clean install</defaultGoal>
+    <scm>
+        <url>https://github.com/Janmm14/CommandRewriter</url>
+        <connection>scm:git:git://github.com/Janmm14/CommandRewriter.git</connection>
+        <developerConnection>scm:git:git@github.com:Janmm14/CommandRewriter.git</developerConnection>
+    </scm>
 
+    <ciManagement>
+        <system>jenkins</system>
+        <url>https://s.janmm14.de/commandrewriter-ci</url>
+    </ciManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>janmm14-public-releases</id>
+            <url>https://repo.janmm14.de/artifactory/public-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>janmm14-public-snapshots</id>
+            <url>https://repo.janmm14.de/artifactory/public-snapshots/</url>
+        </snapshotRepository>
+        <site>
+            <id>janmm14-ci</id>
+            <url>https://s.janmm14.de/jsonmessagemakerci</url>
+        </site>
+        <downloadUrl>https://s.janmm14.de/jsonmessagemakerci</downloadUrl>
+    </distributionManagement>
+
+    <build>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -39,8 +65,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.1</version>
-
+                <version>3.2.4</version>
                 <executions>
                     <execution>
                         <goals>
@@ -48,20 +73,85 @@
                         </goals>
                     </execution>
                 </executions>
-
                 <configuration>
-                    <artifactSet>
-                        <includes>
-                            <include>org.mcstats.bukkit:metrics</include>
-                        </includes>
-                    </artifactSet>
-                    <relocations>
-                        <relocation>
-                            <pattern>org.mcstats</pattern>
-                            <shadedPattern>me.minotopia.commandrewriter.lib.org.mcstats</shadedPattern>
-                        </relocation>
-                    </relocations>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-maven-plugin</artifactId>
+                <version>1.18.20.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>delombok</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <addOutputDirectory>false</addOutputDirectory>
+                    <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+                    <outputDirectory>${project.build.directory}/delombok</outputDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doclint>none</doclint>
+                    <sourcepath>${project.build.directory}/delombok</sourcepath>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                        <manifestSections>
+                            <manifestSection>
+                                <name>me/minotopia/commandrewriter/</name>
+                                <manifestEntries>
+                                    <Sealed>true</Sealed>
+                                </manifestEntries>
+                            </manifestSection>
+                        </manifestSections>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jarsigner-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>sign</id>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <keystore>/var/lib/jenkins/keystore.pkcs12</keystore>
+                    <storetype>pkcs12</storetype>
+                    <sigfile>JANMM14_CERT</sigfile>
+                    <alias>signcert</alias>
+                    <storepass>{CqClXKh2pTIHVtWpasjJlGzeHxBJOqNEC76IVqqwQ497v7Fq62C9LTPrKCPijdV2Guir9r4thB65QsBvU3Iqu2SB8CfJEwxoSy7kQraXOxVeKQAbPNGlub9iCtFqTAhS4xUWKdRkzL/BzU0KrgDxVw==}</storepass>
+                    <keypass>{CqClXKh2pTIHVtWpasjJlGzeHxBJOqNEC76IVqqwQ497v7Fq62C9LTPrKCPijdV2Guir9r4thB65QsBvU3Iqu2SB8CfJEwxoSy7kQraXOxVeKQAbPNGlub9iCtFqTAhS4xUWKdRkzL/BzU0KrgDxVw==}</keypass>
                 </configuration>
             </plugin>
         </plugins>
@@ -75,20 +165,15 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.mcstats.bukkit</groupId>
-            <artifactId>metrics</artifactId>
-            <version>R8-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.14.8</version>
+            <version>1.18.20</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>13.0</version>
+            <version>21.0.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

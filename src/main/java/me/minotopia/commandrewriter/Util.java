@@ -29,7 +29,7 @@ public final class Util {
      * Negates a predicate
      *
      * @param toNegate the predicate to negate
-     * @param <T> the argument of the {@link Predicate#test(Object)} method
+     * @param <T>      the argument of the {@link Predicate#test(Object)} method
      * @return the negated predicate
      * @see Predicate#negate()
      */

@@ -3,8 +3,9 @@ main: me.minotopia.commandrewriter.CRPlugin
 author: HomerBond005
 authors: [MinoTopia, Janmm14]
 version: '${project.version}'
+api-version: 1.13
 commands:
   commandrewrite:
     description: Rewrite commands
     aliases: [cr]
-    permission: CommandRewriter.seecmd
+    permission: commandrewriter.seecmd

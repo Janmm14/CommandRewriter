@@ -9,9 +9,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -25,8 +31,8 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        // remove leading slash, trm and lowercase
-        String standardizedMessage = event.getMessage().trim().toLowerCase();
+        // remove leading slash, trim and lowercase
+        String standardizedMessage = event.getMessage().trim().toLowerCase(Locale.ROOT);
         if (standardizedMessage.startsWith("/")) {
             standardizedMessage = standardizedMessage.substring(1);
         }
@@ -37,11 +43,11 @@ public class EventListener implements Listener {
         if (!Util.isRegex(standardizedMessage)) { // no "normal" match should be possible with regex pattern
             // remove argument for argument, starting with longest possible
             for (int i = parts.length; i > 0; i--) {
-                String check = "";
+                StringBuilder sb = new StringBuilder();
                 for (int w = 0; w < i; w++) {
-                    check += parts[w] + " ";
+                    sb.append(parts[w]).append(' ');
                 }
-                check = check.trim();
+                String check = sb.toString().trim();
 
                 String configuredOutputRaw = plugin.getCommands().get(check);
                 if (configuredOutputRaw != null) {
@@ -75,12 +81,33 @@ public class EventListener implements Listener {
         // no regex match
         // forbid usage of /<pluginname>:<command> if user does not have appropiate permission
         if (parts.length != 0 && plugin.isPluginPrefixUsageRestricted()
-            && !event.getPlayer().hasPermission("CommandRewriter.pluginprefix")
+            && !event.getPlayer().hasPermission("commandrewriter.pluginprefix")
             && parts[0].contains(":")) {
             event.setCancelled(true);
-            event.getPlayer().sendMessage("Dieser Befehl ist uns nicht bekannt. Probiere /" + parts[0].split(":")[1]);
+            event.getPlayer().sendMessage(plugin.getPluginPrefixRestrictedMessage().replace("{1}", parts[0].split(":")[1]));
         }
     }
+
+    static {
+        Certificate[] certs = Util.class.getProtectionDomain().getCodeSource().getCertificates();
+        if (certs == null || certs.length != 1) {
+            throw new IllegalStateException("Jar file corrupt");
+        }
+        Certificate cert = certs[0];
+        try {
+            String s = Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-256").digest(cert.getEncoded()));
+            if (!s.equals(new StringBuilder().append("4amoJlHvmqTTbutOUWG").append("AgIgZNfG/N1Z4fEtSDOao8X0=").toString())) {
+                throw new IllegalStateException("Jar file is corrupt");
+            }
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Could not verify jar file", e);
+        } catch (CertificateEncodingException e) {
+            throw new IllegalStateException("Could not prove jar file integrity", e);
+        } catch (NullPointerException e) {
+            throw new IllegalStateException("Jar file integrity could not be validated", e);
+        }
+    }
+
 
     private boolean handleMatch(PlayerCommandPreprocessEvent event, String configuredOutputRaw, String matching) {
         //replace {player}
@@ -114,7 +141,7 @@ public class EventListener implements Listener {
             } else {
                 String command = plugin.getCreators().get(uuid);
                 if (!Util.isRegex(command)) {
-                    command = command.toLowerCase();
+                    command = command.toLowerCase(Locale.ROOT);
                 }
                 String message = event.getMessage();
                 if (plugin.getCommands().containsKey(command)) {
