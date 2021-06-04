@@ -10,6 +10,10 @@ CommandRewriter is a small plugin that allows you to assign custom texts to cust
 
 You can use colors and define as many lines as you want. If the Minecraft chat does not contain as many chars as you need, you can directly edit the config.yml in /plugins/CommandRewriter/. Just reload after the editing.
 
+Download
+--------
+SpigotMC resource: https://www.spigotmc.org/resources/commandrewriter.93002/
+
 Features
 --------
 
